@@ -1,3 +1,7 @@
+# Contrib
+contrib
+.vscode
+
 # Compiled Lua sources
 luac.out
 
