@@ -5,6 +5,8 @@ Authors : Nikolay Fiykov, v1
 --]]
 local blinkTimer = require("blink-timer")
 local wifiMgr = require("wifi-mgr")
+local netMgr = require("net-mgr")
+local trap = require("trap")
 
 local envCntx = {
     wifi = {
@@ -41,27 +43,10 @@ local function assert2(boolCondition, errMsg, flg)
     end
 end
 
-local function startServer(cntx, getTrapStateFnc)
-    local srv = net.createServer(net.TCP, 30)
-    assert2(srv, "failed to create TCP server", 4)
-    sv:listen(
-        cntx.port,
-        function(conn)
-            sck:on(
-                "sent",
-                function(skt)
-                    skt:close()
-                end
-            )
-            conn:send('HTTP/1.1 200 OK\nContent-Type: application/json\n\n{"trapState":"' .. getTrapStateFnc() .. '"}')
-        end
-    )
-end
-
 local function main()
     spawn(wifiMgr.startWifi, envCntx.wifi)
-    local trapApp = require("trap")(envCntx)
-    spawn(startServer, envCntx.server, trapApp.getTrapState)
+    local trapApp = trap.new(envCntx.trap)
+    spawn(netMgr.startSrv, envCntx.server, trapApp.getTrapState)
     trap.resetLatchPosition()
     spawn(trap.mainLoop)
 end

@@ -3,41 +3,56 @@ License : GLPv3, see LICENCE in root of repository
 
 Authors : Nikolay Fiykov, v1
 --]]
-App = {}
-App.__index = App
+require("pwm")
+require("gpio")
 
-App.new = function(irEmitterPin, latchPin)
-    assert(irEmitterPin, "irEmitterPin not given")
-    assert(latchPin, "latchPin not given")
+local function spawn(timeout, fnc, ...)
+    local vargs = table.pack(...)
+    local t = tmr.create()
+    t:register(
+        timeout,
+        tmr.ALARM_SINGLE,
+        function(t)
+            fnc(table.unpack(vargs))
+        end
+    )
+    t:start()
+end
+
+Trap = {}
+Trap.__index = Trap
+
+Trap.new = function(cntx)
+    assert(cntx)
+    assert(cntx.irEmitterPin, "irEmitterPin not given")
+    assert(cntx.latchPin, "latchPin not given")
     local o = {
-        irEmitterPin = irEmitterPin,
+        irEmitterPin = cntx.irEmitterPin,
         irThreshold = 10,
-        latchPin = latchPin,
+        latchPin = cntx.latchPin,
         latchTripped = 120,
         latchReady = 30,
         trapIsClosed = false,
         signalBits = {1, 1, 0, 1, 0, 1, 0, 1},
         servoOffTimer = tmr.create()
     }
-    -- setmetatable(o, self)
-    -- self.__index = self
-    setmetatable(o, App)
+    setmetatable(o, Trap)
     return o
 end
 
-function App:setServoTo(pos)
+function Trap:setServoTo(pos)
     assert(pos, "pos not given")
     pwm.setduty(self.latchPin, pos)
     pwm.start(self.latchPin)
     self.servoOffTimer:start()
 end
 
-function App:tripTheLatch()
+function Trap:tripTheLatch()
     self:setServoTo(self.latchTripped)
     self.trapIsClosed = true
 end
 
-function App:readyTrap()
+function Trap:readyTrap()
     pwm.setup(self.latchPin, 50, 0)
     gpio.mode(self.irEmitterPin, gpio.OUTPUT, gpio.PULLUP)
     self.servoOffTimer:register(
@@ -48,11 +63,17 @@ function App:readyTrap()
             pwm.stop(self.latchPin)
         end
     )
-    self:setServoTo(self.latchReady)
-    self.trapIsClosed = false
+    self:setServoTo(self.latchTripped)
+    spawn(
+        600,
+        function()
+            self:setServoTo(self.latchReady)
+            self.trapIsClosed = false
+        end
+    )
 end
 
-function App:irTransferBit(bit)
+function Trap:irTransferBit(bit)
     local v1 = adc.read(0)
     gpio.write(self.irEmitterPin, bit == 1 and gpio.HIGH or gpio.LOW)
     local v2 = adc.read(0)
@@ -72,7 +93,7 @@ function App:irTransferBit(bit)
     end
 end
 
-function App:isBarrierBroken()
+function Trap:isBarrierBroken()
     local okCnt = 0
     for i = 1, #self.signalBits do
         if self:irTransferBit(self.signalBits[i]) then
@@ -82,10 +103,10 @@ function App:isBarrierBroken()
     return okCnt ~= #self.signalBits
 end
 
-function App:closeTrapIfAnimalInside()
+function Trap:closeTrapIfAnimalInside()
     if self:isBarrierBroken() then
         self:tripTheLatch()
     end
 end
 
-return App
+return Trap

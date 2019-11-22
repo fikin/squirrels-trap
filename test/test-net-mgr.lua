@@ -13,12 +13,14 @@ function testServer()
     nodemcu.reset()
 
     local cntx = {
-        port = 8080,
-        get_trap_state_fnc = function()
+        port = 8080
+    }
+    n.startSrv(
+        cntx,
+        function()
             return "open"
         end
-    }
-    n.startSrv(cntx)
+    )
     lu.assertEquals(n.state, "listening")
 
     nodemcu.advanceTime(10)

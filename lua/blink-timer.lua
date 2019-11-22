@@ -3,7 +3,8 @@ License : GLPv3, see LICENCE in root of repository
 
 Authors : Nikolay Fiykov, v1
 --]]
-local nodemcu = require("nodemcu")
+require("tmr")
+require("gpio")
 
 local blinkTimer =
     (function()

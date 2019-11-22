@@ -3,6 +3,7 @@ License : GLPv3, see LICENCE in root of repository
 
 Authors : Nikolay Fiykov, v1
 --]]
+require("net")
 local blinkTimer = require("blink-timer")
 
 local blinkFlag = 4
@@ -29,7 +30,7 @@ NetMgr.on_connection = function(con)
     )
 end
 
-NetMgr.startSrv = function(cntx)
+NetMgr.startSrv = function(cntx, getTrapStateFnc)
     NetMgr.state = "initializing"
     local srv = net.createServer(net.TCP, 30)
     if srv == nil then
@@ -37,8 +38,8 @@ NetMgr.startSrv = function(cntx)
         blinkTimer:start(blinkTimer)
     end
     assert(cntx.port, "cntx.port must be provided")
-    assert(cntx.get_trap_state_fnc, "cntx.get_trap_state_fnc must be provided")
-    NetMgr.get_trap_state_fnc = cntx.get_trap_state_fnc
+    assert(getTrapStateFnc, "cntx.get_trap_state_fnc must be provided")
+    NetMgr.get_trap_state_fnc = getTrapStateFnc
     srv:listen(cntx.port, NetMgr.on_connection)
     NetMgr.state = "listening"
 end
