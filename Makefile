@@ -5,7 +5,7 @@ PRJ_DIR := $(shell pwd)
 PRJ_SRC_DIR := $(PRJ_DIR)
 PRJ_CONTRIB_SRC_DIR := $(PRJ_DIR)/contrib
 
-LUA_PATH := $(PRJ_SRC_DIR)/lua/?.lua\;$(PRJ_CONTRIB_SRC_DIR)/lua/?.lua
+LUA_PATH := $(PRJ_SRC_DIR)/lua/?.lua\;$(PRJ_CONTRIB_SRC_DIR)/lua/?.lua\;$(PRJ_SRC_DIR)/test/?.lua
 
 LUA_TEST_CASES := $(wildcard $(PRJ_DIR)/test/*est*.lua)
 

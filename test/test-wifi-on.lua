@@ -5,8 +5,7 @@ Authors : Nikolay Fiykov, v1
 --]]
 local lu = require("luaunit")
 local nodemcu = require("nodemcu")
-local w = require("wifi-mgr")
-local blinkTimer = require("blink-timer")
+local wifiOn = require("wifi-on")
 
 function testNoSuchSSID()
     nodemcu.reset()
@@ -15,14 +14,14 @@ function testNoSuchSSID()
         pswd = "myPSWD",
         hostname = "myHN"
     }
-    w.startWifi(cntx)
+    local isOkFnc = wifiOn(cntx)
     lu.assertEquals(wifi.getmode(), wifi.STATION)
-    lu.assertTrue(blinkTimer.tickets > 0)
+    lu.assertFalse(isOkFnc())
 end
 
-local function assertIsConnectedOk()
+local function assertIsConnectedOk(isOkFnc)
     lu.assertEquals(wifi.getmode(), wifi.STATION)
-    lu.assertEquals(blinkTimer.tickets, 0)
+    lu.assertTrue(isOkFnc())
     local ip, netmask, gateway = wifi.sta.getip()
     lu.assertEquals(ip, "192.168.255.11")
     lu.assertEquals(netmask, "255.255.255.0")
@@ -53,9 +52,9 @@ function testConnectOk()
         pswd = "pswd1",
         hostname = "myHN"
     }
-    w.startWifi(cntx)
-    nodemcu.advanceTime(1000)
-    assertIsConnectedOk()
+    local isOkFnc = wifiOn(cntx)
+    nodemcu.advanceTime(6000)
+    assertIsConnectedOk(isOkFnc)
 end
 
 function testRetry()
@@ -66,12 +65,11 @@ function testRetry()
         pswd = "pswd1",
         hostname = "myHN"
     }
-    w.startWifi(cntx)
-    lu.assertEquals(w.state, "toberetrying")
+    local isOkFnc = wifiOn(cntx)
+    lu.assertFalse(isOkFnc())
     configureWifiScanList()
     nodemcu.advanceTime(6000)
-    lu.assertEquals(w.state, "fullyconected")
-    assertIsConnectedOk()
+    assertIsConnectedOk(isOkFnc)
 end
 
 os.exit(lu.run())
