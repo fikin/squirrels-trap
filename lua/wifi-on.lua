@@ -43,20 +43,20 @@ local function startWifi(cntx)
     local function tryConnecting()
         local function connected_cb(T)
             assert(T, "connected_cb(T) -> T is nil")
-            info("connected successfully to " .. T.SSID)
+            info(string.format("connected successfully to %s", T.SSID))
         end
         local function disconnected_cb(T)
             assert(T, "disconnected_cb(T) -> T is nil")
-            retryFnc("wifi disconnected from " .. T.SSID .. " due to " .. T.reason)
+            retryFnc(string.format("wifi disconnected from %s due to %s", tostring(T.SSID), tostring(T.reason)))
         end
         local function authmode_change_cb(old_auth_mode, new_auth_mode)
-            assert(T, "authmode_change_cb(old_auth_mode,new_auth_mode) -> old_auth_mode is nil")
-            assert(T, "authmode_change_cb(old_auth_mode,new_auth_mode) -> new_auth_mode is nil")
-            retryFnc("wifi authmode changed from " .. old_auth_mode .. " to " .. new_auth_mode)
+            retryFnc(
+                string.format("wifi authmode changed from %s to %s", tostring(old_auth_mode), tostring(new_auth_mode))
+            )
         end
         local function got_ip_cb(T)
             assert(T, "got_ip_cb(T) -> T is nil")
-            info("got IP " .. T.IP)
+            info(string.format("got IP : %s", tostring(T.IP)))
             isOkCb(true)
         end
         local function dhcp_timeout_cb(...)

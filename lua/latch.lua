@@ -26,6 +26,21 @@ local function init(cntx)
     local servoOffMs = cntx.servoOffMs or 500
     local servoOffTimer = tmr.create()
 
+    cntx.log = cntx.log or function(txt)
+            print(txt)
+        end
+    assert(type(cntx.log) == "function")
+
+    local function _log(lvl, msg)
+        cntx.log(string.format("%s %s %s", tostring(tmr.now()), lvl, msg))
+    end
+    local function info(msg)
+        _log("[INFO] ", msg)
+    end
+    local function err(msg)
+        _log("[ERR] ", msg)
+    end
+
     local function setServoTo(pos)
         assert(pos, "pos not given")
         pwm.setduty(cntx.latchPin, pos)
@@ -34,6 +49,7 @@ local function init(cntx)
     end
 
     local function readyTrap()
+        info("servo to start position ...")
         pwm.setup(cntx.latchPin, 50, 0)
         servoOffTimer:register(
             servoOffMs,
@@ -41,6 +57,7 @@ local function init(cntx)
             function()
                 pwm.setduty(cntx.latchPin, 0)
                 pwm.stop(cntx.latchPin)
+                info("servo stopped.")
             end
         )
         setServoTo(latchTrippedPos)
@@ -53,6 +70,7 @@ local function init(cntx)
     end
 
     local function tripTheLatch()
+        info("servo to close position ...")
         setServoTo(latchTrippedPos)
     end
 

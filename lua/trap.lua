@@ -6,7 +6,7 @@ Authors : Nikolay Fiykov, v1
 local function main()
   local cntx = require("cntx")
   local isOpen = true
-  local led = require("led-blinker")(cntx)
+  local ledb = require("led-blinker")(cntx)
   local latch = require("latch")(cntx)
   local barr = require("ir-barrier")(cntx)
   local net =

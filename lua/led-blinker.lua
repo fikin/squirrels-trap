@@ -24,7 +24,7 @@ local function init(cntx)
     timer:register(250, tmr.ALARM_AUTO, onIntr)
     timer:start()
     return function(flg)
-        assert(type(flg) == "boolea")
+        assert(type(flg) == "boolean")
         onFlg = flg
     end
 end

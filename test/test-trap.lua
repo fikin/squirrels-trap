@@ -10,6 +10,7 @@ local trap = require("trap")
 function testStartup()
   nodemcu.reset()
   trap()
+  nodemcu.advanceTime(6000)
 end
 
 os.exit(lu.run())
