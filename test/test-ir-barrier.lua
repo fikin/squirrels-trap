@@ -46,11 +46,11 @@ function testBarrierIsOk()
             end
             return false
         end
-        return isBitOn() and math.random(630, 639) or math.random(610, 619)
+        return isBitOn() and math.random(900, 1020) or math.random(600, 800)
     end
 
     local isBrokenFnc = b(cntx)
-    nodemcu.advanceTime(1200)
+    nodemcu.advanceTime(3000)
 
     lu.assertFalse(isBrokenFnc())
 end
